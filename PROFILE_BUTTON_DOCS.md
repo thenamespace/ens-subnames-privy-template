@@ -41,10 +41,14 @@ A comprehensive wallet connection and user identity management component for you
 
 #### 3. Upload Avatar View
 
-- File picker for image upload
-- Live preview of selected image
-- Uploads to avatar service with SIWE authentication
-- Updates ENS avatar text record
+- **Drag & Drop Zone**: Beautiful upload area with drag-and-drop support
+- **Click to Browse**: Click anywhere on the upload zone to select a file
+- **File Validation**: Validates file type (JPEG, PNG, GIF, WebP) and size (max 5MB)
+- **Live Preview**: Shows large circular preview of selected image
+- **Change Photo**: Easy button to select a different image
+- **Visual Feedback**: Loading spinner and error messages
+- **SIWE Authentication**: Secure upload with Sign-In with Ethereum
+- **ENS Integration**: Automatically updates ENS avatar text record
 - On success: identity refreshes automatically
 
 ## 📦 Components Created
@@ -94,9 +98,12 @@ Comprehensive modal with:
 - **Deterministic Fallbacks**: Each address gets a consistent emoji + color combination
 - **Responsive Design**: Works on mobile and desktop
 - **Smooth Animations**: Modal transitions using Headless UI
-- **Loading States**: Shows loading indicators during checks
+- **Drag & Drop Upload**: Intuitive drag-and-drop file upload with visual feedback
+- **Interactive States**: Hover effects, drag-over highlighting, disabled states
+- **Loading States**: Shows loading indicators during checks and uploads
 - **Success Feedback**: Toast notifications for actions
 - **Error Handling**: Clear error messages for failed operations
+- **File Validation**: Real-time validation with helpful error messages
 
 ## 🚀 Usage
 

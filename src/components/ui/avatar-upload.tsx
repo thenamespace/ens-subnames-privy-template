@@ -1,12 +1,13 @@
 "use client"
 
 import * as React from "react"
-import { Button } from "../ui/button"
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar"
-import { Upload, Loader2, AlertCircle, Check, RotateCw, Move, Edit } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Upload, Loader2, AlertCircle, Check, RotateCw, Move, Edit, X } from "lucide-react"
 import { useUploadAvatar } from "@/hooks/use-upload-avatar"
 import { useUpdateEnsAvatar } from "@/hooks/use-update-ens-avatar"
 import { emojiAvatarForAddress } from "@/utils/avatar"
+import { showSuccessToast, showErrorToast } from "@/components/ui/custom-toast"
 import AvatarEditor from 'react-avatar-editor'
 
 interface AvatarUploadProps {
@@ -33,28 +34,26 @@ export function AvatarUpload({
   const [cropMode, setCropMode] = React.useState(false)
   const [scale, setScale] = React.useState(1.2)
   const [rotate, setRotate] = React.useState(0)
+  
   const fileInputRef = React.useRef<HTMLInputElement>(null)
   const editorRef = React.useRef<AvatarEditor>(null)
 
   const { uploadAvatar, isUploading, data, error } = useUploadAvatar()
   const { updateEnsAvatar } = useUpdateEnsAvatar()
 
-  // Handle file selection
-  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (!file) return
-
+  // Validate and process file
+  const processFile = (file: File) => {
     // Validate file type
     const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
     if (!allowedTypes.includes(file.type)) {
-      alert('Please select a valid image file (JPEG, PNG, GIF, or WebP)')
+      showErrorToast('Please select a valid image file (JPEG, PNG, GIF, or WebP)')
       return
     }
 
-    // Validate file size (2MB limit)
-    const maxSize = 2 * 1024 * 1024 // 2MB
+    // Validate file size (5MB limit)
+    const maxSize = 5 * 1024 * 1024 // 5MB
     if (file.size > maxSize) {
-      alert('File size must be less than 2MB')
+      showErrorToast('File size must be less than 5MB')
       return
     }
 
@@ -76,6 +75,14 @@ export function AvatarUpload({
     setScale(1.2)
     setRotate(0)
   }
+
+  // Handle file selection
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (file) processFile(file)
+  }
+
+  // Drag-and-drop handlers removed as drag zone UI was removed
 
   // Clear selection
   const clearSelection = () => {
@@ -183,10 +190,14 @@ export function AvatarUpload({
       // Call success callback
       onAvatarUploaded?.(result.avatarUrl)
       
+      // Show success message
+      showSuccessToast('Avatar uploaded successfully!')
+      
       // Clear selection after successful upload
       clearSelection()
-    } catch (err) {
+    } catch (err: any) {
       console.error('Upload failed:', err)
+      showErrorToast(err.message || 'Failed to upload avatar')
     }
   }
 
@@ -208,12 +219,24 @@ export function AvatarUpload({
 
   return (
     <div className={`space-y-4 ${className}`}>
+
       {/* Crop Mode */}
       {cropMode && selectedFile && previewUrl && (
         <div className="space-y-4">
-          <div className="text-center">
-            <h3 className="text-sm font-medium mb-2">Crop your avatar</h3>
-            <p className="text-xs text-gray-500 mb-4">Drag to reposition, use controls to adjust</p>
+          <div className="flex items-center justify-between mb-2">
+            <div>
+              <h3 className="text-sm font-medium">Crop your avatar</h3>
+              <p className="text-xs text-gray-500 mt-1">Drag to reposition, use controls to adjust</p>
+            </div>
+            <Button
+              onClick={clearSelection}
+              variant="ghost"
+              size="icon"
+              disabled={isProcessing}
+              title="Cancel"
+            >
+              <X className="w-4 h-4" />
+            </Button>
           </div>
           
           {/* Avatar Editor */}
@@ -236,7 +259,10 @@ export function AvatarUpload({
           <div className="space-y-3">
             {/* Scale Control */}
             <div>
-              <label className="text-xs text-gray-500 block mb-1">Zoom</label>
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-xs font-medium text-gray-700">Zoom</label>
+                <span className="text-xs text-gray-500">{scale.toFixed(1)}x</span>
+              </div>
               <input
                 type="range"
                 min="1"
@@ -244,7 +270,7 @@ export function AvatarUpload({
                 step="0.1"
                 value={scale}
                 onChange={(e) => setScale(parseFloat(e.target.value))}
-                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600 hover:bg-gray-300 transition-colors"
               />
             </div>
 
@@ -264,27 +290,29 @@ export function AvatarUpload({
           </div>
 
           {/* Crop Actions */}
-          <div className="flex gap-2">
-            <Button
-              onClick={clearSelection}
-              variant="outline"
-              disabled={isProcessing}
-              className="flex-1"
-            >
-              Cancel
-            </Button>
+          <div className="flex gap-2 pt-2">
             <Button
               onClick={handleConfirmCrop}
               disabled={isProcessing}
               className="flex-1"
             >
-              Confirm Crop
+              {isProcessing ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                  Processing...
+                </>
+              ) : (
+                <>
+                  <Check className="w-4 h-4 mr-2" />
+                  Confirm Crop
+                </>
+              )}
             </Button>
           </div>
         </div>
       )}
 
-      {/* Avatar Preview with Edit Overlay (when not in crop mode) */}
+      {/* Avatar Preview with Edit Overlay (default when not in crop mode) */}
       {!cropMode && (
         <div className="flex flex-col items-center space-y-3">
           <div className="relative group">

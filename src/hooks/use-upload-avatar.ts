@@ -57,12 +57,12 @@ function buildSiweMessage(params: {
   const { address, chainId, nonce } = params;
   
   const msg = new SiweMessage({
-    domain: 'offchain-next-rainbowkit-template.vercel.app',
+    domain: 'localhost:3000',
     address: address, 
     statement:'Sign in to Avatar Service (local test)',
-    uri: 'https://offchain-next-rainbowkit-template.vercel.app',
+    uri: 'https://localhost:3000',
     version: '1',
-    chainId,
+    chainId: 1,
     nonce,
     issuedAt: new Date().toISOString(),
   });
@@ -111,7 +111,7 @@ async function uploadAvatarDirect({
   console.log('address', address);
   console.log('chainId', chainId);
   console.log('nonce', nonce);
-  const siweMessage = buildSiweMessage({ address, chainId, nonce });
+  const siweMessage = buildSiweMessage({ address, chainId: 1, nonce });
   console.log('siweMessage (exact string to be signed):', siweMessage);
   console.log('siweMessage bytes:', new TextEncoder().encode(siweMessage));
   

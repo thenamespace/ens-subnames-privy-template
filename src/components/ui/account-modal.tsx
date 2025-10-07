@@ -394,8 +394,7 @@ function CreateUsernameView({
 }
 
 // Upload Avatar View Component
-import { useUploadAvatar } from '@/hooks/use-upload-avatar'
-import { useUpdateEnsAvatar } from '@/hooks/use-update-ens-avatar'
+import { AvatarUpload } from '@/components/ui/avatar-upload'
 
 function UploadAvatarView({
   subname,
@@ -406,96 +405,27 @@ function UploadAvatarView({
   onSuccess: () => void
   onCancel: () => void
 }) {
-  const [selectedFile, setSelectedFile] = useState<File | null>(null)
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
-  const { uploadAvatar, isUploading } = useUploadAvatar()
-  const { updateEnsAvatar } = useUpdateEnsAvatar()
-
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      setSelectedFile(file)
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        setPreviewUrl(reader.result as string)
-      }
-      reader.readAsDataURL(file)
-    }
-  }
-
-  const handleUpload = async () => {
-    if (!selectedFile || !subname?.fullName) return
-
-    try {
-      // Determine network from environment or default to mainnet
-      const network = (process.env.NEXT_PUBLIC_NETWORK as 'mainnet' | 'sepolia' | 'holesky') || 'mainnet'
-
-      // Upload to avatar service
-      const result = await uploadAvatar({
-        file: selectedFile,
-        subname: subname.fullName,
-        network,
-      })
-
-      // Update ENS avatar text record
-      await updateEnsAvatar({
-        subname: subname.fullName,
-        avatarUrl: result.avatarUrl,
-      })
-
-      onSuccess()
-    } catch (err: any) {
-      showErrorToast(`Failed to upload avatar: ${err.message}`)
-    }
-  }
+  const network = (process.env.NEXT_PUBLIC_NETWORK as 'mainnet' | 'sepolia') || 'mainnet'
 
   return (
     <div className="space-y-4">
-      {/* File Input */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Select Avatar Image
-        </label>
-        <input
-          type="file"
-          accept="image/*"
-          onChange={handleFileSelect}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-        />
-      </div>
-
-      {/* Preview */}
-      {previewUrl && (
-        <div className="flex justify-center">
-          <div className="relative w-32 h-32 rounded-full overflow-hidden border-4 border-gray-200">
-            <Image 
-              src={previewUrl} 
-              alt="Avatar preview" 
-              width={128}
-              height={128}
-              className="object-cover"
-            />
-          </div>
-        </div>
-      )}
-
-      {/* Actions */}
-      <div className="flex gap-3 pt-4">
-        <button
-          onClick={onCancel}
-          className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-          disabled={isUploading}
-        >
-          Cancel
-        </button>
-        <button
-          onClick={handleUpload}
-          disabled={!selectedFile || isUploading}
-          className="flex-1 button-primary rounded-lg py-2 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {isUploading ? 'Uploading...' : 'Upload'}
-        </button>
-      </div>
+      <AvatarUpload
+        subname={subname?.fullName || ''}
+        network={network}
+        address={subname?.owner}
+        currentAvatarSrc={subname?.texts?.avatar}
+        onAvatarUploaded={(avatarUrl) => {
+          console.log('Avatar uploaded:', avatarUrl)
+          onSuccess()
+        }}
+      />
+      
+      <button
+        onClick={onCancel}
+        className="w-full px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium text-gray-700"
+      >
+        Close
+      </button>
     </div>
   )
 }

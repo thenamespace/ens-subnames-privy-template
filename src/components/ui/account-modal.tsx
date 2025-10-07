@@ -6,7 +6,6 @@ import { Sheet, SheetContent } from '@/components/ui/sheet'
 import { useMediaQuery } from '@/hooks/use-media-query'
 import { XMarkIcon, CheckIcon, ClipboardIcon } from '@heroicons/react/24/outline'
 import { usePrivy } from '@privy-io/react-auth'
-import Image from 'next/image'
 import { showSuccessToast, showErrorToast } from './custom-toast'
 
 interface AccountModalProps {
@@ -212,7 +211,7 @@ function AccountView({
       <div className="flex flex-col items-center text-center">
         <div className="relative w-20 h-20 rounded-full overflow-hidden flex items-center justify-center mb-4">
           {avatarSrc ? (
-            <Image 
+            <img 
               src={avatarSrc} 
               alt={name} 
               width={80}

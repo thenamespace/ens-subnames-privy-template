@@ -299,7 +299,6 @@ function CreateUsernameView({
   onCancel: () => void
 }) {
   const [username, setUsername] = useState('')
-  const [avatarUrl, setAvatarUrl] = useState('')
   const debouncedUsername = useDebounce(username, 500)
   
   const { data: isAvailable, isLoading: checkingAvailability } = useSubnameAvailability(debouncedUsername)
@@ -316,7 +315,7 @@ function CreateUsernameView({
         label: username,
         address: address,
         displayName: username,
-        pfpUrl: avatarUrl,
+        pfpUrl: '',
       },
       {
         onSuccess: () => {
@@ -370,20 +369,6 @@ function CreateUsernameView({
             {isAvailable ? 'Available' : 'Not available'}
           </p>
         )}
-      </div>
-
-      {/* Avatar URL (Optional) */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Avatar URL (optional)
-        </label>
-        <input
-          type="url"
-          value={avatarUrl}
-          onChange={(e) => setAvatarUrl(e.target.value)}
-          placeholder="https://..."
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-        />
       </div>
 
       {/* Error */}

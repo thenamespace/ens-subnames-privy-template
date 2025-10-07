@@ -15,7 +15,7 @@ function Home() {
   const { address, isConnected } = useAccount();
   const { signMessageAsync } = useSignMessage();
 
-  console.log("ready", ready);
+  // Render loading state until Privy is ready
   
   if (!ready) {
     return <FullScreenLoader />;

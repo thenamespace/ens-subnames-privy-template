@@ -12,7 +12,7 @@ import AvatarEditor from 'react-avatar-editor'
 
 interface AvatarUploadProps {
   subname: string
-  network?: 'mainnet' | 'sepolia' | 'holesky'
+  network?: 'mainnet' | 'sepolia'
   address?: string
   currentAvatarSrc?: string
   onAvatarUploaded?: (avatarUrl: string) => void

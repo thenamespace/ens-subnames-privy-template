@@ -305,7 +305,7 @@ function CreateUsernameView({
   const { data: isAvailable, isLoading: checkingAvailability } = useSubnameAvailability(debouncedUsername)
   const { createSubname, isCreating, error } = useCreateSubname()
   
-  const ENS_NAME = process.env.NEXT_PUBLIC_ENS_NAME || 'namespace.eth'
+  const ENS_NAME = process.env.NEXT_PUBLIC_ENS_NAME!;
   const fullUsername = username ? `${username}.${ENS_NAME}` : ''
 
   const handleCreate = async () => {
@@ -435,10 +435,9 @@ function UploadAvatarView({
         network={network}
         address={subname?.owner}
         currentAvatarSrc={subname?.texts?.avatar}
-        onAvatarUploaded={(avatarUrl) => {
-          console.log('Avatar uploaded:', avatarUrl)
-          onSuccess()
-        }}
+            onAvatarUploaded={() => {
+              onSuccess()
+            }}
       />
       
       <button

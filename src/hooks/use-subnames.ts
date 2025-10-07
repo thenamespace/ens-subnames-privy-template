@@ -42,9 +42,7 @@ export function useSubnames(address: string | undefined) {
         if (process.env.NEXT_PUBLIC_ENS_NAME) {
           requestParams.parentName = process.env.NEXT_PUBLIC_ENS_NAME
         }
-console.log("requestParams in useSubnames", requestParams);
         const response = await clientSideClient.getFilteredSubnames(requestParams)
-        console.log("response in useSubnames", response);
         return response as SubnamesResponse
       } catch (error) {
         console.error('Error fetching subnames:', error)

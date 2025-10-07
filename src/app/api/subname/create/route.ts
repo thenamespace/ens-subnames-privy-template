@@ -9,12 +9,16 @@ interface CreateSubnameRequest {
     displayName: string;
     pfpUrl?: string;
 }
-const ENS_NAME = process.env.NEXT_PUBLIC_ENS_NAME!;
+const ENS_NAME = process.env.NEXT_PUBLIC_ENS_NAME;
 
 export async function POST(request: NextRequest) {
     try {
+        if (!ENS_NAME) {
+            return NextResponse.json({
+                error: 'Server misconfiguration: NEXT_PUBLIC_ENS_NAME is required'
+            }, { status: 500 })
+        }
         const body: CreateSubnameRequest = await request.json();
-        console.log("body", body);
 
         // Validate required fields
         if (!body.label || !body.address) {
@@ -56,7 +60,6 @@ export async function POST(request: NextRequest) {
             parentName: ENS_NAME,
             owner: normalizedAddress
         });
-        console.log("existingAddressCheck", existingAddressCheck);
         if (existingAddressCheck?.items && existingAddressCheck.items.length > 0) {
             const existingSubname = existingAddressCheck.items[0];
             if (existingSubname?.fullName) {
@@ -86,7 +89,6 @@ export async function POST(request: NextRequest) {
             metadata: metadata,
             owner: normalizedAddress
         });
-        console.log(result);
         return NextResponse.json({
             success: true,
             data: result,

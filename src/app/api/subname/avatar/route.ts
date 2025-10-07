@@ -6,10 +6,15 @@ interface UpdateAvatarRequest {
     label: string;
     pfpUrl: string;
 }
-const ENS_NAME = process.env.NEXT_PUBLIC_ENS_NAME!;
+const ENS_NAME = process.env.NEXT_PUBLIC_ENS_NAME;
 
 export async function POST(request: NextRequest) {
     try {
+        if (!ENS_NAME) {
+            return NextResponse.json({
+                error: 'Server misconfiguration: NEXT_PUBLIC_ENS_NAME is required'
+            }, { status: 500 })
+        }
         const body: UpdateAvatarRequest = await request.json();
 
         // Validate required fields
@@ -39,16 +44,13 @@ export async function POST(request: NextRequest) {
             fullSubname = `${finalLabel}.${ENS_NAME}`;
         }
 
-        console.log(`Updating avatar for ${fullSubname} with URL: ${body.pfpUrl}`);
-
         // Update the avatar text record
         const result = await client.addTextRecord(
             fullSubname,
             "avatar", 
             body.pfpUrl
         );
-          
-        console.log('Avatar update result:', result);
+
         return NextResponse.json({
             success: true,
             data: result,

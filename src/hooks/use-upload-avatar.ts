@@ -1,8 +1,8 @@
  import { useMutation } from '@tanstack/react-query';
 import { SiweMessage } from 'siwe';
-import { useAccount, useSignMessage, useChainId } from 'wagmi';
+import { useAccount, useSignMessage } from 'wagmi';
 
-type Network = 'mainnet' | 'sepolia' | 'holesky';
+type Network = 'mainnet' | 'sepolia' ;
 type UploadParams = {
   file: File;
   subname: string;      // e.g. 'alice.offchainsub.eth'
@@ -10,12 +10,12 @@ type UploadParams = {
   scope?: 'avatar' | 'header' | 'avatar+header';
 };
 
-// Direct calls to avatar service
-const baseUrl = 'https://metadata.namespace.ninja';
+// Direct calls to avatar service (configurable via env)
+const baseUrl = process.env.NEXT_PUBLIC_AVATAR_SERVICE_URL || 'https://metadata.namespace.ninja';
 
 async function getNonce(address: string, scope: UploadParams['scope'] = 'avatar+header') {
   const url = `${baseUrl}/auth/nonce`;
-  console.log('Fetching nonce directly from:', url);
+  // Request nonce from avatar service
   
   try {
     const res = await fetch(url, {
@@ -27,20 +27,14 @@ async function getNonce(address: string, scope: UploadParams['scope'] = 'avatar+
       body: JSON.stringify({ address, scope }),
     });
     
-    console.log('Nonce response status:', res.status);
-    console.log('Nonce response headers:', Object.fromEntries(res.headers.entries()));
-    
     if (!res.ok) {
       const errorText = await res.text().catch(() => 'Unknown error');
-      console.error('Nonce request failed:', res.status, errorText);
       throw new Error(`Failed to get nonce: ${res.status} ${errorText}`);
     }
     
     const data = await res.json();
-    console.log('Nonce response:', data);
     return data as { nonce: string; expiresAt: number };
   } catch (error) {
-    console.error('Nonce fetch error:', error);
     if (error instanceof TypeError && error.message.includes('fetch')) {
       throw new Error('Network error: Cannot connect to avatar service. Check if the server is running and CORS is configured.');
     }
@@ -50,38 +44,23 @@ async function getNonce(address: string, scope: UploadParams['scope'] = 'avatar+
 
 function buildSiweMessage(params: {
   address: string;
-  chainId: number;
   nonce: string;
   statement?: string;
 }) {
-  const { address, chainId, nonce } = params;
+  const { address, nonce } = params;
   
   const msg = new SiweMessage({
-    domain: 'localhost:3000',
+    domain: process.env.NEXT_PUBLIC_SIWE_DOMAIN || 'localhost:3000',
     address: address, 
-    statement:'Sign in to Avatar Service (local test)',
-    uri: 'https://localhost:3000',
+    statement:'Sign in to Avatar Service',
+    uri: process.env.NEXT_PUBLIC_SIWE_URI || 'http://localhost:3000',
     version: '1',
-    chainId: 1,
+    chainId: Number(process.env.NEXT_PUBLIC_SIWE_CHAIN_ID || 1),
     nonce,
     issuedAt: new Date().toISOString(),
   });
   
-  const preparedMessage = msg.prepareMessage();
-  
-  console.log('Prepared SIWE message structure:');
-  console.log('- domain:', msg.domain);
-  console.log('- address:', msg.address);
-  console.log('- statement:', msg.statement);
-  console.log('- uri:', msg.uri);
-  console.log('- version:', msg.version);
-  console.log('- chainId:', msg.chainId);
-  console.log('- nonce:', msg.nonce);
-  console.log('- issuedAt:', msg.issuedAt);
-  console.log('Raw prepared message:', JSON.stringify(preparedMessage));
-  console.log('Message bytes:', new TextEncoder().encode(preparedMessage));
-  
-  return preparedMessage;
+  return msg.prepareMessage();
 }
 
 async function uploadAvatarDirect({
@@ -89,37 +68,20 @@ async function uploadAvatarDirect({
   subname,
   network,
   address,
-  chainId,
   signMessageAsync,
 }: {
   file: File;
   subname: string;
   network: Network;
   address: `0x${string}`;
-  chainId: number;
   signMessageAsync: (args: { message: string }) => Promise<`0x${string}`>;
 }) {
   // 1) Get nonce
-  console.log('Getting nonce for upload with scope: avatar+header');
-  const { nonce, expiresAt } = await getNonce(address, 'avatar+header');
-  console.log('Received nonce:', nonce);
-  console.log('Nonce expires at:', new Date(expiresAt));
-  console.log('Time until expiry:', Math.round((expiresAt - Date.now()) / 1000), 'seconds');
+  const { nonce } = await getNonce(address, 'avatar+header');
 
   // 2) Build SIWE message and sign
-  console.log('Building SIWE message');
-  console.log('address', address);
-  console.log('chainId', chainId);
-  console.log('nonce', nonce);
-  const siweMessage = buildSiweMessage({ address, chainId: 1, nonce });
-  console.log('siweMessage (exact string to be signed):', siweMessage);
-  console.log('siweMessage bytes:', new TextEncoder().encode(siweMessage));
-  
+  const siweMessage = buildSiweMessage({ address, nonce });
   const siweSignature = await signMessageAsync({ message: siweMessage });
-  console.log('siweSignature:', siweSignature);
-  
-  // Verify we're sending the EXACT same message that was signed
-  console.log('Confirming: message to send === message that was signed:', siweMessage);
 
   // 3) POST multipart form
   const form = new FormData();
@@ -130,37 +92,12 @@ async function uploadAvatarDirect({
   form.append('siweSignature', siweSignature);
   form.append('avatar', file, file.name);  // Explicitly set filename
 
-  console.log('Form data being sent:');
-  console.log('- avatar file:', file.name, file.size, 'bytes', file.type);
-  console.log('- siweMessage:', siweMessage);
-  console.log('- siweSignature:', siweSignature);
-  console.log('- address:', address);
-  
-  // Debug the actual FormData contents
-  console.log('FormData entries:');
-  for (const [key, value] of form.entries()) {
-    if (value instanceof File) {
-      console.log(`  ${key}:`, {
-        name: value.name,
-        size: value.size,
-        type: value.type,
-        lastModified: value.lastModified
-      });
-    } else {
-      console.log(`  ${key}:`, typeof value, value.length, 'chars');
-    }
-  }
-
-  console.log('Making request directly to:', `${baseUrl}/profile/${network}/${subname}/avatar`);
   
   const res = await fetch(`${baseUrl}/profile/${network}/${subname}/avatar`, {
     method: 'POST',
     body: form,
     // Don't set Content-Type - let browser set multipart/form-data boundary
   });
-  
-  console.log('Response status:', res.status);
-  console.log('Response headers:', Object.fromEntries(res.headers.entries()));
 
   if (!res.ok) {
     const text = await res.text().catch(() => '');
@@ -180,19 +117,16 @@ async function uploadAvatarDirect({
 
 export function useUploadAvatar() {
   const { address } = useAccount();
-  const chainId = useChainId();
   const { signMessageAsync } = useSignMessage();
 
   const uploadMutation = useMutation({
     mutationFn: async ({ file, subname, network }: UploadParams) => {
       if (!address) throw new Error('Connect wallet');
-      if (!chainId) throw new Error('Missing chainId');
       return uploadAvatarDirect({
         file,
         subname,
         network,
         address,
-        chainId,
         signMessageAsync,
       });
     },

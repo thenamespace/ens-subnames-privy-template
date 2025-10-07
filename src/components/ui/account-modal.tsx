@@ -1,7 +1,9 @@
 "use client"
 
-import { useState, Fragment } from 'react'
-import { Dialog, Transition } from '@headlessui/react'
+import { useState } from 'react'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Sheet, SheetContent } from '@/components/ui/sheet'
+import { useMediaQuery } from '@/hooks/use-media-query'
 import { XMarkIcon, CheckIcon, ClipboardIcon } from '@heroicons/react/24/outline'
 import { usePrivy } from '@privy-io/react-auth'
 import Image from 'next/image'
@@ -39,6 +41,7 @@ export function AccountModal({
   const { logout } = usePrivy()
   const [currentView, setCurrentView] = useState<ModalView>('account')
   const [copied, setCopied] = useState(false)
+  const isMobile = useMediaQuery('(max-width: 639px)')
 
   const handleClose = () => {
     setCurrentView('account')
@@ -71,90 +74,108 @@ export function AccountModal({
     showSuccessToast('Avatar uploaded successfully!')
   }
 
-  return (
-    <Transition appear show={isOpen} as={Fragment}>
-      <Dialog as="div" className="relative z-50" onClose={handleClose}>
-        <Transition.Child
-          as={Fragment}
-          enter="ease-out duration-300"
-          enterFrom="opacity-0"
-          enterTo="opacity-100"
-          leave="ease-in duration-200"
-          leaveFrom="opacity-100"
-          leaveTo="opacity-0"
-        >
-          <div className="fixed inset-0 bg-black/25" />
-        </Transition.Child>
+  if (!isOpen) return null
 
-        <div className="fixed inset-0 overflow-y-auto">
-          <div className="flex min-h-full items-center justify-center p-4 text-center">
-            <Transition.Child
-              as={Fragment}
-              enter="ease-out duration-300"
-              enterFrom="opacity-0 scale-95"
-              enterTo="opacity-100 scale-100"
-              leave="ease-in duration-200"
-              leaveFrom="opacity-100 scale-100"
-              leaveTo="opacity-0 scale-95"
-            >
-              <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
-                {/* Header */}
-                <div className="flex items-center justify-between mb-6">
-                  <Dialog.Title
-                    as="h3"
-                    className="text-lg font-medium leading-6 text-gray-900"
-                  >
-                    {currentView === 'account' && 'Account'}
-                    {currentView === 'create-username' && 'Create Username'}
-                    {currentView === 'upload-avatar' && 'Upload Avatar'}
-                  </Dialog.Title>
-                  <button
-                    onClick={handleClose}
-                    className="text-gray-400 hover:text-gray-500"
-                  >
-                    <XMarkIcon className="h-5 w-5" />
-                  </button>
-                </div>
-
-                {/* Views */}
-                {currentView === 'account' && (
-                  <AccountView
-                    address={address}
-                    name={name}
-                    avatarSrc={avatarSrc}
-                    fallbackEmoji={fallbackEmoji}
-                    fallbackColor={fallbackColor}
-                    balance={balance}
-                    hasSubnames={hasSubnames}
-                    copied={copied}
-                    onCopyAddress={handleCopyAddress}
-                    onCreateUsername={() => setCurrentView('create-username')}
-                    onUploadAvatar={() => setCurrentView('upload-avatar')}
-                    onDisconnect={handleDisconnect}
-                  />
-                )}
-
-                {currentView === 'create-username' && (
-                  <CreateUsernameView
-                    address={address}
-                    onSuccess={handleUsernameCreated}
-                    onCancel={() => setCurrentView('account')}
-                  />
-                )}
-
-                {currentView === 'upload-avatar' && (
-                  <UploadAvatarView
-                    subname={subname}
-                    onSuccess={handleAvatarUploaded}
-                    onCancel={() => setCurrentView('account')}
-                  />
-                )}
-              </Dialog.Panel>
-            </Transition.Child>
+  if (isMobile) {
+    return (
+      <Sheet open={isOpen} onOpenChange={(open) => { if (!open) handleClose() }}>
+        <SheetContent>
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-base font-medium">
+              {currentView === 'account' && 'Account'}
+              {currentView === 'create-username' && 'Create Username'}
+              {currentView === 'upload-avatar' && 'Upload Avatar'}
+            </h3>
+            <button onClick={handleClose} className="text-gray-400 hover:text-gray-500">
+              <XMarkIcon className="h-5 w-5" />
+            </button>
           </div>
-        </div>
-      </Dialog>
-    </Transition>
+
+          {currentView === 'account' && (
+            <AccountView
+              address={address}
+              name={name}
+              avatarSrc={avatarSrc}
+              fallbackEmoji={fallbackEmoji}
+              fallbackColor={fallbackColor}
+              balance={balance}
+              hasSubnames={hasSubnames}
+              copied={copied}
+              onCopyAddress={handleCopyAddress}
+              onCreateUsername={() => setCurrentView('create-username')}
+              onUploadAvatar={() => setCurrentView('upload-avatar')}
+              onDisconnect={handleDisconnect}
+            />
+          )}
+
+          {currentView === 'create-username' && (
+            <CreateUsernameView
+              address={address}
+              onSuccess={handleUsernameCreated}
+              onCancel={() => setCurrentView('account')}
+            />
+          )}
+
+          {currentView === 'upload-avatar' && (
+            <UploadAvatarView
+              subname={subname}
+              onSuccess={handleAvatarUploaded}
+              onCancel={() => setCurrentView('account')}
+            />
+          )}
+        </SheetContent>
+      </Sheet>
+    )
+  }
+
+  return (
+    <Dialog open={isOpen} onOpenChange={(open) => { if (!open) handleClose() }}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>
+            {currentView === 'account' && 'Account'}
+            {currentView === 'create-username' && 'Create Username'}
+            {currentView === 'upload-avatar' && 'Upload Avatar'}
+          </DialogTitle>
+          <button onClick={handleClose} className="text-gray-400 hover:text-gray-500">
+            <XMarkIcon className="h-5 w-5" />
+          </button>
+        </DialogHeader>
+
+        {currentView === 'account' && (
+          <AccountView
+            address={address}
+            name={name}
+            avatarSrc={avatarSrc}
+            fallbackEmoji={fallbackEmoji}
+            fallbackColor={fallbackColor}
+            balance={balance}
+            hasSubnames={hasSubnames}
+            copied={copied}
+            onCopyAddress={handleCopyAddress}
+            onCreateUsername={() => setCurrentView('create-username')}
+            onUploadAvatar={() => setCurrentView('upload-avatar')}
+            onDisconnect={handleDisconnect}
+          />
+        )}
+
+        {currentView === 'create-username' && (
+          <CreateUsernameView
+            address={address}
+            onSuccess={handleUsernameCreated}
+            onCancel={() => setCurrentView('account')}
+          />
+        )}
+
+        {currentView === 'upload-avatar' && (
+          <UploadAvatarView
+            subname={subname}
+            onSuccess={handleAvatarUploaded}
+            onCancel={() => setCurrentView('account')}
+          />
+        )}
+      </DialogContent>
+    </Dialog>
   )
 }
 

@@ -1,4 +1,4 @@
-import { ArrowRightIcon } from "@heroicons/react/16/solid";
+import { ProfileButton } from "./profile-button";
 
 export function Header() {
   return (
@@ -8,15 +8,7 @@ export function Header() {
       </div>
 
       <div className="flex flex-row justify-end items-center gap-4 h-9">
-        <button className="button-primary rounded-full">
-          <a
-            className="flex flex-row items-center gap-2"
-            href="/dashboard"
-          >
-            <span>Dashboard</span>
-            <ArrowRightIcon className="h-4 w-4" strokeWidth={2} />
-          </a>
-        </button>
+        <ProfileButton />
       </div>
     </header>
   );

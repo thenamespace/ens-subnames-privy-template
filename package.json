@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@headlessui/react": "^2.2.9",
     "@heroicons/react": "^2.2.0",
     "@privy-io/react-auth": "^2.25.0",
     "@privy-io/wagmi": "^2.0.0",

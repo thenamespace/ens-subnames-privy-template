@@ -54,7 +54,7 @@ function buildSiweMessage(params: {
   nonce: string;
   statement?: string;
 }) {
-  const { address, chainId, nonce, statement } = params;
+  const { address, chainId, nonce } = params;
   
   const msg = new SiweMessage({
     domain: 'offchain-next-rainbowkit-template.vercel.app',
@@ -101,7 +101,6 @@ async function uploadAvatarDirect({
 }) {
   // 1) Get nonce
   console.log('Getting nonce for upload with scope: avatar+header');
-  const nonceStartTime = Date.now();
   const { nonce, expiresAt } = await getNonce(address, 'avatar+header');
   console.log('Received nonce:', nonce);
   console.log('Nonce expires at:', new Date(expiresAt));

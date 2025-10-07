@@ -3,6 +3,6 @@ const client = createOffchainClient({
     mode: "mainnet"
 });
 
-client.setApiKey("deptofagri.eth", process.env.NAMESPACE_API_KEY || "");
+client.setApiKey("happygame.eth", process.env.NAMESPACE_API_KEY || "");
 
 export default client;

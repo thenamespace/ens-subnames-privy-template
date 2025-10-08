@@ -98,14 +98,29 @@ export function usePreferredIdentity(args: {
     return address ? `${address.slice(0, 6)}...${address.slice(-4)}` : ''
   }
   
-  // Only use avatar if it's a valid URL (not empty string or invalid)
+  // Avatar logic: if subname exists, use subname avatar only (no ENS fallback)
+  // If no subname, then use ENS avatar
   const getAvatarSrc = () => {
-    const avatar = fallbackAvatar || subname?.texts?.avatar
-    // Return undefined if avatar is empty, null, or not a valid URL-like string
-    if (!avatar || avatar.trim() === '' || (!avatar.startsWith('http') && !avatar.startsWith('data:'))) {
-      return undefined
+    // If subname exists, use subname avatar (even if empty/null - no ENS fallback)
+    if (hasSubnames) {
+      const subnameAvatar = subname?.texts?.avatar
+      // Return undefined if avatar is empty, null, or not a valid URL-like string
+      if (!subnameAvatar || subnameAvatar.trim() === '' || (!subnameAvatar.startsWith('http') && !subnameAvatar.startsWith('data:'))) {
+        return undefined
+      }
+      return subnameAvatar
     }
-    return avatar
+    
+    // If no subname exists, use ENS avatar as fallback
+    if (!hasSubnames && fallbackAvatar) {
+      // Return undefined if avatar is empty, null, or not a valid URL-like string
+      if (!fallbackAvatar || fallbackAvatar.trim() === '' || (!fallbackAvatar.startsWith('http') && !fallbackAvatar.startsWith('data:'))) {
+        return undefined
+      }
+      return fallbackAvatar
+    }
+    
+    return undefined
   }
 
   const name = getName()

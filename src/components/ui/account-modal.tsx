@@ -224,7 +224,10 @@ function AccountView({
               className="object-cover"
             />
           ) : (
-            <div className={`w-full h-full flex items-center justify-center text-2xl ${fallbackColor}`}>
+            <div 
+              className="w-full h-full flex items-center justify-center text-2xl"
+              style={{ backgroundColor: fallbackColor }}
+            >
               {fallbackEmoji}
             </div>
           )}

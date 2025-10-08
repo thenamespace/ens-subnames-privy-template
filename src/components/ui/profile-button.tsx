@@ -75,7 +75,10 @@ export function ProfileButton() {
               className="object-cover"
             />
           ) : (
-            <div className={`w-full h-full flex items-center justify-center text-sm ${fallbackColor}`}>
+            <div 
+              className="w-full h-full flex items-center justify-center text-sm"
+              style={{ backgroundColor: fallbackColor }}
+            >
               {fallbackEmoji}
             </div>
           )}

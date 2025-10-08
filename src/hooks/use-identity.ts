@@ -1,6 +1,7 @@
 import { useEnsName, useEnsAvatar } from 'wagmi'
 import { usePreferredIdentity } from './use-subnames'
 import { mainnet } from 'wagmi/chains'
+import { emojiAvatarForAddress } from '@/utils/avatar'
 
 export function useIdentity(address: string | undefined) {
   // Fetch ENS name and avatar
@@ -22,29 +23,9 @@ export function useIdentity(address: string | undefined) {
   })
 
   // Generate deterministic emoji/color fallback if no avatar
-  const getDeterministicEmoji = (addr: string) => {
-    const emojis = ['🌟', '🎨', '🚀', '🌈', '🎭', '🎪', '🎯', '🎲', '🎸', '🎺', '🎼', '🎹', '🎬', '🎮', '🏆', '🏀', '⚽', '🎾', '🏈', '🏐']
-    const hash = addr.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
-    return emojis[hash % emojis.length]
-  }
-
-  const getDeterministicColor = (addr: string) => {
-    const colors = [
-      'bg-gradient-to-br from-purple-400 to-pink-400',
-      'bg-gradient-to-br from-blue-400 to-cyan-400',
-      'bg-gradient-to-br from-green-400 to-emerald-400',
-      'bg-gradient-to-br from-orange-400 to-red-400',
-      'bg-gradient-to-br from-indigo-400 to-purple-400',
-      'bg-gradient-to-br from-pink-400 to-rose-400',
-      'bg-gradient-to-br from-yellow-400 to-orange-400',
-      'bg-gradient-to-br from-teal-400 to-cyan-400',
-    ]
-    const hash = addr.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
-    return colors[hash % colors.length]
-  }
-
-  const fallbackEmoji = address ? getDeterministicEmoji(address) : '👤'
-  const fallbackColor = address ? getDeterministicColor(address) : 'bg-gray-400'
+  const avatarData = address ? emojiAvatarForAddress(address) : { emoji: '👤', color: '#9CA3AF' }
+  const fallbackEmoji = avatarData.emoji
+  const fallbackColor = avatarData.color
 
   return {
     name,

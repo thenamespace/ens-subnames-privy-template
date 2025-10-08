@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Sheet, SheetContent } from '@/components/ui/sheet'
 import { useMediaQuery } from '@/hooks/use-media-query'
@@ -47,6 +47,13 @@ export function AccountModal({
     onClose()
   }
 
+  // When the modal opens and the user has no subnames, start on the create-username view
+  useEffect(() => {
+    if (isOpen && !hasSubnames) {
+      setCurrentView('create-username')
+    }
+  }, [isOpen, hasSubnames])
+
   const handleCopyAddress = async () => {
     if (address) {
       await navigator.clipboard.writeText(address)
@@ -81,7 +88,6 @@ export function AccountModal({
         <SheetContent>
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-base font-medium">
-              {currentView === 'account' && 'Account'}
               {currentView === 'create-username' && 'Create Username'}
               {currentView === 'upload-avatar' && 'Upload Avatar'}
             </h3>
@@ -132,7 +138,6 @@ export function AccountModal({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>
-            {currentView === 'account' && 'Account'}
             {currentView === 'create-username' && 'Create Username'}
             {currentView === 'upload-avatar' && 'Upload Avatar'}
           </DialogTitle>
@@ -206,39 +211,39 @@ function AccountView({
   onDisconnect: () => void
 }) {
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       {/* Large Avatar and Name */}
       <div className="flex flex-col items-center text-center">
-        <div className="relative w-20 h-20 rounded-full overflow-hidden flex items-center justify-center mb-4">
+        <div className="relative w-16 h-16 rounded-xl overflow-hidden flex items-center justify-center mb-3 ring-2 ring-gray-100">
           {avatarSrc ? (
             <img 
               src={avatarSrc} 
               alt={name} 
-              width={80}
-              height={80}
+              width={64}
+              height={64}
               className="object-cover"
             />
           ) : (
-            <div className={`w-full h-full flex items-center justify-center text-3xl ${fallbackColor}`}>
+            <div className={`w-full h-full flex items-center justify-center text-2xl ${fallbackColor}`}>
               {fallbackEmoji}
             </div>
           )}
         </div>
-        <h4 className="text-xl font-medium text-gray-900">{name}</h4>
+        <h4 className="text-lg font-semibold text-gray-900">{name}</h4>
         {balance && (
-          <p className="text-sm text-gray-500 mt-1">
-            {parseFloat(balance.formatted).toFixed(4)} {balance.symbol}
+          <p className="text-sm text-gray-500 mt-0.5">
+            {parseFloat(balance.formatted).toFixed(3)} {balance.symbol}
           </p>
         )}
       </div>
 
       {/* Actions */}
-      <div className="space-y-2">
+      <div className="space-y-3">
         {/* Create Username - only if no username */}
         {!hasSubnames && (
           <button
             onClick={onCreateUsername}
-            className="w-full button-primary rounded-lg py-3"
+            className="w-full button-primary rounded-lg py-2.5 text-sm font-medium"
           >
             Create Username
           </button>
@@ -248,37 +253,38 @@ function AccountView({
         {hasSubnames && (
           <button
             onClick={onUploadAvatar}
-            className="w-full button-primary rounded-lg py-3"
+            className="w-full button-primary rounded-lg py-2.5 text-sm font-medium"
           >
             Upload Avatar
           </button>
         )}
 
-        {/* Copy Address */}
-        <button
-          onClick={onCopyAddress}
-          className="w-full flex items-center justify-center gap-2 px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-        >
-          {copied ? (
-            <>
-              <CheckIcon className="h-4 w-4 text-green-600" />
-              <span className="text-sm font-medium text-green-600">Copied!</span>
-            </>
-          ) : (
-            <>
-              <ClipboardIcon className="h-4 w-4 text-gray-700" />
-              <span className="text-sm font-medium text-gray-700">Copy Address</span>
-            </>
-          )}
-        </button>
+        {/* Copy Address and Disconnect in 2 columns */}
+        <div className="grid grid-cols-2 gap-2 pt-1">
+          <button
+            onClick={onCopyAddress}
+            className="flex items-center justify-center gap-1.5 px-3 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-xs font-medium"
+          >
+            {copied ? (
+              <>
+                <CheckIcon className="h-3.5 w-3.5 text-green-600" />
+                <span className="text-green-600">Copied!</span>
+              </>
+            ) : (
+              <>
+                <ClipboardIcon className="h-3.5 w-3.5 text-gray-600" />
+                <span className="text-gray-600">Copy</span>
+              </>
+            )}
+          </button>
 
-        {/* Disconnect */}
-        <button
-          onClick={onDisconnect}
-          className="w-full px-4 py-3 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 transition-colors"
-        >
-          <span className="text-sm font-medium">Disconnect</span>
-        </button>
+          <button
+            onClick={onDisconnect}
+            className="px-3 py-2.5 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 transition-colors text-xs font-medium"
+          >
+            Disconnect
+          </button>
+        </div>
       </div>
     </div>
   )

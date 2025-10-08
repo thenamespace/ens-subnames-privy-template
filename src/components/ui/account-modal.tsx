@@ -214,13 +214,13 @@ function AccountView({
     <div className="space-y-5">
       {/* Large Avatar and Name */}
       <div className="flex flex-col items-center text-center">
-        <div className="relative w-16 h-16 rounded-xl overflow-hidden flex items-center justify-center mb-3 ring-2 ring-gray-100">
+        <div className="relative w-20 h-20 rounded-full overflow-hidden flex items-center justify-center mb-3 ring-2 ring-gray-100">
           {avatarSrc ? (
             <img 
               src={avatarSrc} 
               alt={name} 
-              width={64}
-              height={64}
+              width={80}
+              height={80}
               className="object-cover"
             />
           ) : (

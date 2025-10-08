@@ -65,18 +65,18 @@ export function ProfileButton() {
         className="flex items-center gap-2 px-2.5 py-1 bg-white border border-gray-200 rounded-lg hover:border-gray-300 transition-colors shadow-sm"
       >
         {/* Avatar */}
-        <div className="relative w-6 h-6 rounded-full overflow-hidden flex items-center justify-center">
+        <div className="relative w-8 h-8 rounded-full overflow-hidden flex items-center justify-center">
           {avatarSrc ? (
             <img 
               src={avatarSrc} 
               alt={name || 'Avatar'} 
-              width={24}
-              height={24}
+              width={32}
+              height={32}
               className="object-cover"
             />
           ) : (
             <div 
-              className="w-full h-full flex items-center justify-center text-sm"
+              className="w-full h-full flex items-center justify-center text-base"
               style={{ backgroundColor: fallbackColor }}
             >
               {fallbackEmoji}
@@ -86,12 +86,12 @@ export function ProfileButton() {
 
         {/* Name and optional balance */}
         <div className="flex flex-col items-start">
-          <span className="text-xs font-medium text-gray-900">
+          <span className="text-sm font-medium text-gray-900">
             {isLoading ? '...' : name}
           </span>
           {balance && (
             <span className="text-xs text-gray-500">
-              {parseFloat(balance.formatted).toFixed(2)} {balance.symbol}
+             {parseFloat(balance.formatted).toFixed(3)} {balance.symbol}
             </span>
           )}
         </div>

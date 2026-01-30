@@ -13,7 +13,7 @@ export default function Home() {
       <header className="w-full border-b border-slate-200 bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/60">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center gap-2">
-            <Image src="/logo.png" alt="Namespace" width={32} height={32} />
+            <Image src="/logo.png" alt="Namespace" width={150} height={40} />
           </div>
           <ProfileButton />
         </div>
